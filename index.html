@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transaction Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>CBE Transaction Checker</h2>
+
+  <label for="transactionId">Enter Transaction ID:</label>
+  <input type="text" id="transactionId" placeholder="e.g.FT123456">
+
+  <label for="accountDigits">Enter Last 8 Digits of Account Number:</label>
+  <input type="text" id="accountDigits" placeholder="e.g.12345678" maxlength="8">
+
+  <button onclick="buildAndOpenUrl()">Open Transaction</button>
+
+  <script>
+    function buildAndOpenUrl() {
+      const baseUrl = 'https://apps.cbe.com.et:100/?id=';
+      const transactionId = document.getElementById('transactionId').value.trim();
+      const accountDigits = document.getElementById('accountDigits').value.trim();
+
+      if (transactionId === '' || accountDigits.length !== 8 || isNaN(accountDigits)) {
+        alert('Please enter a valid Transaction ID and exactly 8 numeric digits for the account number.');
+        return;
+      }
+
+      const fullId = transactionId + accountDigits;
+      const fullUrl = baseUrl + encodeURIComponent(fullId);
+
+      window.open(fullUrl, '_blank');
+    }
+  </script>
+
+</body>
+</html>
