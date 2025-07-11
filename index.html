@@ -3,64 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <title>Transaction Lookup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 32px 24px 24px 24px;
       max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-    }
-
-    input, button {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin: 0 auto 16px auto;
+      display: block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      background: #fff;
+      border: 2px solid #e9ecef;
+      object-fit: cover;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #222;
+    }
+    label {
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-size: 15px;
+      color: #333;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
       font-size: 16px;
+      margin-bottom: 4px;
+      background: #f9fafb;
+      transition: border 0.2s;
     }
-
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+      background: #fff;
+    }
+    .error {
+      color: #d32f2f;
+      font-size: 13px;
+      margin-bottom: 4px;
+      min-height: 18px;
+    }
+    .button-row {
+      margin-top: 18px;
+      position: relative;
+    }
     button {
-      background-color: #007bff;
-      color: white;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+      color: #fff;
       border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    button:hover {
-      background-color: #0056b3;
+    button:disabled {
+      background: #b0c4de;
+      cursor: not-allowed;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 500px) {
+      .card {
+        padding: 18px 6vw 18px 6vw;
+        max-width: 98vw;
+      }
+      h2 {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
-
-  <h2>CBE Transaction Checker</h2>
-
-  <label for="transactionId">Enter Transaction ID:</label>
-  <input type="text" id="transactionId" placeholder="e.g.FT123456">
-
-  <label for="accountDigits">Enter Last 8 Digits of Account Number:</label>
-  <input type="text" id="accountDigits" placeholder="e.g.12345678" maxlength="8">
-
-  <button onclick="buildAndOpenUrl()">Open Transaction</button>
-
+  <div class="card">
+    <img src="cbe_logo.png" alt="CBE Logo" class="logo" width="60" height="60" />
+    <h2>CBE Transaction Checker</h2>
+    <label for="transactionId">Enter Transaction ID:</label>
+    <input type="text" id="transactionId" placeholder="e.g.FT123456">
+    <div id="transactionIdError" class="error"></div>
+    <label for="accountDigits">Enter Last 8 Digits of Account Number:</label>
+    <input type="text" id="accountDigits" placeholder="e.g.23456789" maxlength="8">
+    <div id="accountDigitsError" class="error"></div>
+    <div class="button-row">
+      <button id="openBtn" onclick="buildAndOpenUrl()">
+        <span id="spinner" style="display:none" class="spinner"></span>
+        <span id="btnText">Open Transaction</span>
+      </button>
+    </div>
+  </div>
   <script>
+    function showError(id, message) {
+      document.getElementById(id).textContent = message;
+    }
+    function clearErrors() {
+      showError('transactionIdError', '');
+      showError('accountDigitsError', '');
+    }
+    function setLoading(loading) {
+      document.getElementById('openBtn').disabled = loading;
+      document.getElementById('spinner').style.display = loading ? '' : 'none';
+      document.getElementById('btnText').textContent = loading ? 'Opening...' : 'Open Transaction';
+    }
     function buildAndOpenUrl() {
+      clearErrors();
       const baseUrl = 'https://apps.cbe.com.et:100/?id=';
       const transactionId = document.getElementById('transactionId').value.trim();
       const accountDigits = document.getElementById('accountDigits').value.trim();
-
-      if (transactionId === '' || accountDigits.length !== 8 || isNaN(accountDigits)) {
-        alert('Please enter a valid Transaction ID and exactly 8 numeric digits for the account number.');
-        return;
+      let hasError = false;
+      if (transactionId === '') {
+        showError('transactionIdError', 'Transaction ID is required.');
+        hasError = true;
       }
-
-      const fullId = transactionId + accountDigits;
-      const fullUrl = baseUrl + encodeURIComponent(fullId);
-
-      window.open(fullUrl, '_blank');
+      if (accountDigits.length !== 8 || isNaN(accountDigits)) {
+        showError('accountDigitsError', 'Enter exactly 8 numeric digits.');
+        hasError = true;
+      }
+      if (hasError) return;
+      setLoading(true);
+      setTimeout(() => {
+        const fullId = transactionId + accountDigits;
+        const fullUrl = baseUrl + encodeURIComponent(fullId);
+        window.open(fullUrl, '_blank');
+        setLoading(false);
+      }, 600);
     }
   </script>
-
 </body>
 </html>
