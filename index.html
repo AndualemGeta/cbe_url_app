@@ -120,6 +120,12 @@
 </head>
 <body>
   <div class="card">
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px;">
+      <select id="langSelect" style="border-radius:6px; padding:4px 8px; font-size:14px;">
+        <option value="en">English</option>
+        <option value="am">አማርኛ</option>
+      </select>
+    </div>
     <img src="cbe_logo.png" alt="CBE Logo" class="logo" width="60" height="60" />
     <h2>CBE Transaction Checker</h2>
     <label for="transactionId">Enter Transaction ID:</label>
@@ -136,6 +142,57 @@
     </div>
   </div>
   <script>
+    const translations = {
+      en: {
+        title: 'CBE Transaction Checker',
+        transactionIdLabel: 'Enter Transaction ID:',
+        transactionIdPlaceholder: 'e.g.FT123456',
+        accountDigitsLabel: 'Enter Last 8 Digits of Account Number:',
+        accountDigitsPlaceholder: 'e.g.23456789',
+        openBtn: 'Open Transaction',
+        openingBtn: 'Opening...',
+        transactionIdError: 'Transaction ID is required.',
+        accountDigitsError: 'Enter exactly 8 numeric digits.'
+      },
+      am: {
+        title: 'የንግድ ባንክ ግብይት ማረጋገጫ',
+        transactionIdLabel: 'የግብይት መለያ ቁጥር ያስገቡ፡',
+        transactionIdPlaceholder: 'ለምሳሌ፡ FT123456',
+        accountDigitsLabel: 'የባንክ ቁጥር የመጨረሻ 8 አሃዝ ያስገቡ፡',
+        accountDigitsPlaceholder: 'ለምሳሌ፡ 23456789',
+        openBtn: 'ግብይቱን አረጋግጥ',
+        openingBtn: 'በመክፈት ላይ...',
+        transactionIdError: 'የግብይት መለያ ቁጥር ያስፈልጋል።',
+        accountDigitsError: 'ትክክለኛ 8 አሃዝ ያስገቡ።'
+      }
+    };
+
+    function setLanguage(lang) {
+      const t = translations[lang];
+      document.querySelector('h2').textContent = t.title;
+      document.querySelector('label[for="transactionId"]').textContent = t.transactionIdLabel;
+      document.getElementById('transactionId').placeholder = t.transactionIdPlaceholder;
+      document.querySelector('label[for="accountDigits"]').textContent = t.accountDigitsLabel;
+      document.getElementById('accountDigits').placeholder = t.accountDigitsPlaceholder;
+      document.getElementById('btnText').textContent = t.openBtn;
+      // Clear errors on language switch
+      showError('transactionIdError', '');
+      showError('accountDigitsError', '');
+    }
+
+    document.getElementById('langSelect').addEventListener('change', function() {
+      setLanguage(this.value);
+    });
+
+    // Default to English
+    setLanguage('en');
+
+    let currentLang = 'en';
+    document.getElementById('langSelect').addEventListener('change', function() {
+      currentLang = this.value;
+      setLanguage(currentLang);
+    });
+
     function showError(id, message) {
       document.getElementById(id).textContent = message;
     }
@@ -146,7 +203,8 @@
     function setLoading(loading) {
       document.getElementById('openBtn').disabled = loading;
       document.getElementById('spinner').style.display = loading ? '' : 'none';
-      document.getElementById('btnText').textContent = loading ? 'Opening...' : 'Open Transaction';
+      const t = translations[currentLang];
+      document.getElementById('btnText').textContent = loading ? t.openingBtn : t.openBtn;
     }
     function buildAndOpenUrl() {
       clearErrors();
@@ -154,12 +212,13 @@
       const transactionId = document.getElementById('transactionId').value.trim();
       const accountDigits = document.getElementById('accountDigits').value.trim();
       let hasError = false;
+      const t = translations[currentLang];
       if (transactionId === '') {
-        showError('transactionIdError', 'Transaction ID is required.');
+        showError('transactionIdError', t.transactionIdError);
         hasError = true;
       }
       if (accountDigits.length !== 8 || isNaN(accountDigits)) {
-        showError('accountDigitsError', 'Enter exactly 8 numeric digits.');
+        showError('accountDigitsError', t.accountDigitsError);
         hasError = true;
       }
       if (hasError) return;
