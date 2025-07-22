@@ -231,6 +231,18 @@
         setLoading(false);
       }, 600);
     }
+
+    // Load cached account number if available
+    window.addEventListener('DOMContentLoaded', function() {
+      const cachedAccount = localStorage.getItem('accountDigits');
+      if (cachedAccount) {
+        document.getElementById('accountDigits').value = cachedAccount;
+      }
+    });
+    // Save account number to cache on input
+    document.getElementById('accountDigits').addEventListener('input', function() {
+      localStorage.setItem('accountDigits', this.value);
+    });
   </script>
 </body>
 </html>
