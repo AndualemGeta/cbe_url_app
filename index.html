@@ -132,7 +132,8 @@
     <input type="text" id="transactionId" placeholder="e.g.FT123456">
     <div id="transactionIdError" class="error"></div>
     <label for="accountDigits">Enter Account Number :</label>
-    <input type="text" id="accountDigits" placeholder="e.g.1000123456789" maxlength="13">
+    <input type="text" id="accountDigits" placeholder="e.g.1000123456789" maxlength="13" list="accountDigitsList">
+    <datalist id="accountDigitsList"></datalist>
     <div id="accountDigitsError" class="error"></div>
     <div class="button-row">
       <button id="openBtn" onclick="buildAndOpenUrl()">
@@ -232,16 +233,35 @@
       }, 600);
     }
 
-    // Load cached account number if available
+    function updateAccountDigitsList() {
+      const list = document.getElementById('accountDigitsList');
+      list.innerHTML = '';
+      const accounts = JSON.parse(localStorage.getItem('accountDigitsHistory') || '[]');
+      accounts.forEach(acc => {
+        const option = document.createElement('option');
+        option.value = acc;
+        list.appendChild(option);
+      });
+    }
+
+    // Save account number to cache and history on input
+    document.getElementById('accountDigits').addEventListener('input', function() {
+      localStorage.setItem('accountDigits', this.value);
+      let accounts = JSON.parse(localStorage.getItem('accountDigitsHistory') || '[]');
+      if (this.value.length === 13 && !accounts.includes(this.value)) {
+        accounts.push(this.value);
+        localStorage.setItem('accountDigitsHistory', JSON.stringify(accounts));
+        updateAccountDigitsList();
+      }
+    });
+
+    // Load cached account number and history if available
     window.addEventListener('DOMContentLoaded', function() {
       const cachedAccount = localStorage.getItem('accountDigits');
       if (cachedAccount) {
         document.getElementById('accountDigits').value = cachedAccount;
       }
-    });
-    // Save account number to cache on input
-    document.getElementById('accountDigits').addEventListener('input', function() {
-      localStorage.setItem('accountDigits', this.value);
+      updateAccountDigitsList();
     });
   </script>
 </body>
