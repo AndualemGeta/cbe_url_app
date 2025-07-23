@@ -255,6 +255,9 @@
       }
     });
 
+    // Always update datalist when field is focused
+    document.getElementById('accountDigits').addEventListener('focus', updateAccountDigitsList);
+
     // Load cached account number and history if available
     window.addEventListener('DOMContentLoaded', function() {
       const cachedAccount = localStorage.getItem('accountDigits');
